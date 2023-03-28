@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Interactive Game</title>
+  </head>
+  <body>
+    <div id="game-container">
+      <p>RoboCrisis @ Home</p>
+      <button onclick="exploreRoom()">CCTV VIGILANCE CAMERAS</button>
+      <button onclick="turnOnDevice()">open the console</button>
+    </div>
+   <style>
+ <style>
+/* General styles */
+      box-sizing: border-box;
+      font-family: 'Courier New',
+      monospace;
+
+      body {
+        background-color: #0d0d0d;
+        color: #8cc4ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      button {
+        background-color: #303030;
+        border: none;
+        color: #8cc4ff;
+        text-transform: uppercase;
+        padding: 10px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(140, 196, 255, 0.75);
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+
+      button:hover {
+        background-color: #404040;
+        box-shadow: 0 0 15px rgba(140, 196, 255, 1);
+      }
+
+      button:active {
+        background-color: #202020;
+      }
+#game-container {position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        border: 2px solid #8cc4ff;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: rgba(48, 48, 48, 0.8);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        user-select: none;
+        /* Prevent text selection while dragging */
+        cursor: move;
+        /* Change cursor to move icon */
+        width: auto;
+        max-width: 90%;
+        overflow: auto;
+        /* Add scrollbars if content overflows */
+        box-sizing: border-box;
+        /* Include padding and border in the total width and height */
+}@keyframes glitch {
+
+        0%,
+        100% {
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        5%,
+        95% {
+          clip-path: polygon(0 0, 100% 0, 100% 20%, 0 20%);
+        }
+
+        10%,
+        90% {
+          clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+        }
+
+        15%,
+        85% {
+          clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%);
+        }
+
+        20%,
+        80% {
+          clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+        }
+
+        25%,
+        75% {
+          clip-path: polygon(0 80%, 100% 80%, 100% 100%, 0 100%);
+        }
+      }
+#game-container ::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(255, 0, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3));
+        animation: glitch 2s infinite;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        opacity: 0.2;
+      }
+
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    </style>
+<script>
+      window.addEventListener('DOMContentLoaded', function() {
+        var ui = document.querySelector('#game-container');
+        var isMouseDown = false;
+        var offsetX, offsetY;
+
+        ui.addEventListener('mousedown', function(e) {
+          isMouseDown = true;
+          offsetX = e.clientX - ui.offsetLeft;
+          offsetY = e.clientY - ui.offsetTop;
+        });
+
+        document.addEventListener('mousemove', function(e) {
+          if (isMouseDown) {
+            ui.style.left = e.clientX - offsetX + 'px';
+            ui.style.top = e.clientY - offsetY + 'px';
+          }
+        });
+
+        document.addEventListener('mouseup', function() {
+          isMouseDown = false;
+        });
+      });
+
+    </script>
+
+    <script>
+      function exploreRoom() {
+        window.location.href = "creepycams.html";
+      }
+      
+      function turnOnDevice() {
+        document.getElementById("game-container").innerHTML = 
+          '<p>Press [X], [Y], or [?]</p>' +
+          '<button onclick="acceptOffer()">X</button>' +
+          '<button onclick="declineOffer()">Y</button>' +
+          '<button onclick="alienSequence()">?</button>';
+      }
+      
+      function acceptOffer() {
+        document.getElementById("game-container").innerHTML = 
+          '<p>You find a vulnerability,would you like to use it or chiken away?</p>' +
+          '<button onclick="walkAway()">chiken away</button>' +
+          '<button onclick="enterPass()">Exploit the vulnerability</button>';
+      }
+      
+      function declineOffer() {
+        window.location.href = "chiken.html";
+      }
+      
+      function walkAway() {
+        window.location.href = "chiken.html";
+      }
+      
+      function enterPass() {
+        document.getElementById("game-container").innerHTML = 
+          '<p>You just entered a admin folder with some creepy and disturbing files?</p>' +
+          '<button onclick="breakDevice()">Close that sheet!</button>' +
+          '<button onclick="justChill()">I wanna kwnow, Dkwnow?</button>';
+      }
+      
+      function breakDevice() {
+        window.location.href = "index.html";
+      }
+      
+      function justChill() {
+        window.location.href = "game.html";
+      }
+      
+      function alienSequence() {
+        // Generate random questions and answers with alien characters and ASCII sequences
+        // and display them in the game-container div
+        document.getElementById("game-container").innerHTML = '<p>Random sequence of questions and answers with aliens</p>';
+      }
+    </script>
+
+  </body>
+</html>

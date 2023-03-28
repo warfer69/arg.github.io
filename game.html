@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Game of Life</title>
+    <style>
+      /* General styles */
+      /* General styles */
+      box-sizing: border-box;
+      font-family: 'Courier New',
+      monospace;
+
+      body {
+        background-color: #0d0d0d;
+        color: #8cc4ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      button {
+        background-color: #303030;
+        border: none;
+        color: #8cc4ff;
+        text-transform: uppercase;
+        padding: 10px 16px;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(140, 196, 255, 0.75);
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+
+      button:hover {
+        background-color: #404040;
+        box-shadow: 0 0 15px rgba(140, 196, 255, 1);
+      }
+
+      button:active {
+        background-color: #202020;
+      }
+
+      #gameCanvas {
+        border: 1px solid #8cc4ff;
+        box-shadow: 0 0 15px rgba(140, 196, 255, 1);
+      }
+
+      /* General styling */
+      * {
+        box-sizing: border-box;
+        font-family: 'Courier New', monospace;
+      }
+
+
+      /* UI container */
+      #ui {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        border: 2px solid #8cc4ff;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: rgba(48, 48, 48, 0.8);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        user-select: none;
+        /* Prevent text selection while dragging */
+        cursor: move;
+        /* Change cursor to move icon */
+        width: auto;
+        max-width: 90%;
+        overflow: auto;
+        /* Add scrollbars if content overflows */
+        box-sizing: border-box;
+        /* Include padding and border in the total width and height */
+      }
+
+
+      /* Info section */
+      #info {
+        display: flex;
+        gap: 40px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        text-align: center;
+        width: 100%;
+        color: #2DFF1E
+      }
+
+      /* Controls section */
+      #controls {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+      }
+
+      /* Pattern input */
+      #patternInput {
+        background-color: #303030;
+        border: none;
+        color: #8cc4ff;
+        padding: 8px 12px;
+        font-size: 16px;
+        box-shadow: 0 0 10px rgba(140, 196, 255, 0.75);
+        width: 100%;
+      }
+
+      /* Message */
+      #message {
+        color: #ff6666;
+        font-weight: bold;
+        font-size: 18px;
+        text-shadow: 0 0 5px rgba(255, 102, 102, 0.5);
+      }
+
+      /* Add a glitch effect to the UI container */
+      @keyframes glitch {
+
+        0%,
+        100% {
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        5%,
+        95% {
+          clip-path: polygon(0 0, 100% 0, 100% 20%, 0 20%);
+        }
+
+        10%,
+        90% {
+          clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+        }
+
+        15%,
+        85% {
+          clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%);
+        }
+
+        20%,
+        80% {
+          clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+        }
+
+        25%,
+        75% {
+          clip-path: polygon(0 80%, 100% 80%, 100% 100%, 0 100%);
+        }
+      }
+
+      #ui::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(255, 0, 0, 0.3), rgba(0, 255, 0, 0.3), rgba(0, 0, 255, 0.3));
+        animation: glitch 2s infinite;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        opacity: 0.2;
+      }
+
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    </style>
+  </head>
+
+  <body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui">
+      <div id="info">
+        <span id="generationInfo"></span>
+        <span id="coordinatesInfo"></span>
+        <span id="challengeInfo"></span>
+      </div>
+      <div id="controls">
+        <button id="resetButton">Reset</button>
+        <button id="startStopButton">Start</button>
+        <input type="text" id="patternInput" placeholder="1010">
+        <button id="addPatternButton">Add Pattern</button>
+      </div>
+      <span id="message"></span>
+    </div>
+    <script>
+      window.addEventListener('DOMContentLoaded', function() {
+        var ui = document.querySelector('#ui');
+        var isMouseDown = false;
+        var offsetX, offsetY;
+
+        ui.addEventListener('mousedown', function(e) {
+          isMouseDown = true;
+          offsetX = e.clientX - ui.offsetLeft;
+          offsetY = e.clientY - ui.offsetTop;
+        });
+
+        document.addEventListener('mousemove', function(e) {
+          if (isMouseDown) {
+            ui.style.left = e.clientX - offsetX + 'px';
+            ui.style.top = e.clientY - offsetY + 'px';
+          }
+        });
+
+        document.addEventListener('mouseup', function() {
+          isMouseDown = false;
+        });
+      });
+
+    </script>
+    <script>
+      'use strict';
+
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const resetButton = document.getElementById("resetButton");
+      const startStopButton = document.getElementById("startStopButton");
+      const challengeInfo = document.getElementById("challengeInfo");
+      const message = document.getElementById("message");
+      const cellSize = 20;
+      const numRows = Math.floor(window.innerHeight / cellSize);
+      const numCols = Math.floor(window.innerWidth / cellSize);
+
+      canvas.width = numCols * cellSize;
+      canvas.height = numRows * cellSize;
+
+      let grid = createEmptyGrid();
+      let gameInterval;
+      let isRunning = false;
+
+      let currentChallengeIndex = 0;
+      const challenges = [{
+          objective: "Draw your first 4X4",
+          targetPattern: "singlePulsar",
+          setup: () => {
+            grid = createEmptyGrid();
+            drawGrid();
+          },
+          check: () => checkTargetPattern("singlePulsar")
+        },
+        {
+          objective: "Create a pattern that becomes stable after 5 iterations.",
+          targetPattern: "stablePattern",
+          setup: () => {
+            grid = createEmptyGrid();
+            drawGrid();
+          },
+          check: () => checkTargetPatternAfterIterations("stablePattern", 5)
+        }
+
+      ];
+function checkTargetPatternAfterIterations(targetPattern, numIterations) {
+  let tempGrid = JSON.parse(JSON.stringify(grid));
+  for (let i = 0; i < numIterations; i++) {
+    tempGrid = getNextGeneration(tempGrid);
+  }
+  return checkTargetPattern(targetPattern, tempGrid);
+  
+}
+
+      const addPatternButton = document.getElementById("addPatternButton");
+      const patternInput = document.getElementById("patternInput");
+
+      function addPattern(patternString) {
+        const pattern = patternString.split("\n").map(row => row.split("").map(Number));
+        const centerRow = Math.floor(numRows / 2);
+        const centerCol = Math.floor(numCols / 2);
+
+        for (let row = 0; row < pattern.length; row++) {
+          for (let col = 0; col < pattern[row].length; col++) {
+            grid[centerRow - Math.floor(pattern.length / 2) + row][centerCol - Math.floor(pattern[row].length / 2) + col] = pattern[row][col];
+          }
+        }
+
+        drawGrid();
+      }
+
+      function handleAddPatternButtonClick() {
+        const patternString = patternInput.value;
+        if (patternString) {
+          addPattern(patternString);
+        } else {
+          console.log('No pattern entered');
+        }
+      }
+
+      addPatternButton.addEventListener('click', handleAddPatternButtonClick);
+
+      function updateGenerationInfo(generation) {
+        const generationInfo = document.getElementById("generationInfo");
+        generationInfo.textContent = `Generation: ${generation}`;
+      }
+
+      function updateCoordinatesInfo(row, col) {
+        const coordinatesInfo = document.getElementById("coordinatesInfo");
+        coordinatesInfo.textContent = `Coordinates: (${row}, ${col})`;
+      }
+
+      function createEmptyGrid() {
+        return new Array(numRows).fill(null).map(() => new Array(numCols).fill(0));
+      }
+
+      function drawGrid() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < numRows; row++) {
+          for (let col = 0; col < numCols; col++) {
+            ctx.fillStyle = grid[row][col] ? "#0f0" : "#000";
+            ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            ctx.strokeStyle = "#333";
+            ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+
+      function toggleCell(row, col) {
+        grid[row][col] = 1 - grid[row][col];
+      }
+
+      function updateChallengeInfo() {
+        challengeInfo.textContent = `Challenge ${currentChallengeIndex + 1}: ${challenges[currentChallengeIndex].objective}`;
+      }
+
+      const patterns = {
+        singlePulsar: [
+          [1, 1],
+          [1, 1],
+        ],
+      };
+
+      function checkTargetPattern(pattern) {
+        const targetPattern = patterns[pattern];
+
+        if (!targetPattern) {
+          return false;
+        }
+
+        const targetRows = targetPattern.length;
+        const targetCols = targetPattern[0].length;
+
+        for (let row = 0; row <= numRows - targetRows; row++) {
+          for (let col = 0; col <= numCols - targetCols; col++) {
+            let match = true;
+
+            for (let targetRow = 0; targetRow <
+              targetRows; targetRow++) {
+              for (let targetCol = 0; targetCol < targetCols; targetCol++) {
+                if (grid[row + targetRow][col + targetCol] !== targetPattern[targetRow][targetCol]) {
+                  match = false;
+                  break;
+                }
+              }
+
+              if (!match) {
+                break;
+              }
+            }
+
+            if (match) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      let generation = 0;
+
+      function gameLoop() {
+        if (isRunning) {
+          grid = getNextGeneration(grid);
+          generation++;
+          drawGrid();
+          checkChallengeCompletion();
+          updateGenerationInfo(generation);
+          setTimeout(gameLoop, 100);
+        }
+      }
+
+      function getNextGeneration(grid) {
+        const newGrid = createEmptyGrid();
+
+        for (let row = 0; row < numRows; row++) {
+          for (let col = 0; col < numCols; col++) {
+            const neighbors = countNeighbors(grid, row, col);
+            if (grid[row][col] && (neighbors === 2 || neighbors === 3)) {
+              newGrid[row][col] = 1;
+            } else if (!grid[row][col] && neighbors === 3) {
+              newGrid[row][col] = 1;
+            }
+          }
+        }
+
+        return newGrid;
+      }
+
+      function countNeighbors(grid, row, col) {
+        let count = 0;
+
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (dr === 0 && dc === 0) continue;
+            const newRow = row + dr;
+            const newCol = col + dc;
+            if (
+              newRow >= 0 &&
+              newRow < numRows &&
+              newCol >= 0 &&
+              newCol < numCols &&
+              grid[newRow][newCol]
+            ) {
+              count++;
+            }
+          }
+        }
+
+        return count;
+      }
+
+      function checkChallengeCompletion() {
+        if (challenges[currentChallengeIndex].check()) {
+          message.textContent = "Challenge completed! Well done!";
+          currentChallengeIndex++;
+          
+          if (currentChallengeIndex >= challenges.length) {
+            message.textContent = "Congratulations! You completed all challenges!";
+            currentChallengeIndex = 0;
+          }
+          updateChallengeInfo();
+          challenges[currentChallengeIndex].setup();
+        }
+      }
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (!isRunning) {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const row = Math.floor(y / cellSize);
+          const col = Math.floor(x / cellSize);
+          updateCoordinatesInfo(row, col);
+        }
+      });
+
+      canvas.addEventListener("mousedown", (e) => {
+        if (!isRunning) {
+          const rect = canvas.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const row = Math.floor(y / cellSize);
+          const col = Math.floor(x / cellSize);
+          toggleCell(row, col);
+          drawGrid();
+        }
+      });
+
+      resetButton.addEventListener("click", () => {
+        challenges[currentChallengeIndex].setup();
+      });
+
+      startStopButton.addEventListener("click", () => {
+        if (isRunning) {
+          isRunning = false;
+          startStopButton.textContent = "Start";
+        } else {
+          isRunning = true;
+          startStopButton.textContent = "Stop";
+          gameLoop();
+        }
+      });
+
+
+      addPatternButton.addEventListener("click", () => {
+        const patternString = patternInput.value.trim();
+        if (/^[01]+$/.test(patternString)) {
+          addPattern(patternString);
+          message.textContent = ""; // Clear the message
+        } else {
+          message.textContent = "Invalid pattern. Please enter a pattern with only 0 and 1.";
+        }
+      });
+
+      updateChallengeInfo();
+      challenges[currentChallengeIndex].setup();
+
+    </script>
+  </body>
+
+</html>

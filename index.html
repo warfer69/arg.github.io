@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboCrisis</title>
+    <link rel="stylesheet" href="styles.css">
+<style>
+		/* Set the video as the background */
+		video {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			min-width: 100%;
+			min-height: 100%;
+			width: auto;
+			height: auto;
+			z-index: -100;
+			transform: translateX(-50%) translateY(-50%);
+			background-size: cover;
+			overflow: hidden;
+		}
+
+		/* Hide the video controls */
+		video::-webkit-media-controls {
+			display:none !important;
+		}
+		video::-webkit-media-controls-enclosure {
+			display:none !important;
+		}
+		video::-webkit-media-controls-panel {
+			display:none !important;
+		}
+		video::-webkit-media-controls-play-button {
+			display:none !important;
+		}
+		video::-webkit-media-controls-start-playback-button {
+			display:none !important;
+		}
+	</style>
+</head>
+<body>
+	<!-- The video element -->
+	<video autoplay loop muted controls>
+		<source src="video.mp4" type="video/mp4">
+	</video>
+    <div id="password-prompt">
+        <h1 id="roboCrisis-title">Robocrisis.exe</h1>
+        <div class="number"></div>
+        <input type="password" id="password-input" placeholder="Enter password">
+        <button id="submit-button">SURE?</button>
+        
+    </div>
+    <script>
+        // Lore text animation
+        const loreTextBefore = document.querySelector("#lore-text-before");
+        const loreText = "";
+        let i = 0;
+
+        function typeWriter() {
+            if (i < loreText.length) {
+                loreTextBefore.innerHTML += loreText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 50);
+            }
+        }
+
+        typeWriter();
+
+        // Timer countdown
+        function toggleBit() {
+            const numberElement = document.querySelector('.number');
+            let number = '';
+            for (let i = 0; i < 7; i++) {
+                number += Math.round(Math.random()).toString();
+            }
+            numberElement.textContent = number;
+            }
+
+setInterval(toggleBit, 178);
+
+      
+
+        // Password validation
+        const passwordInput = document.querySelector("#password-input");
+        const submitButton = document.querySelector("#submit-button");
+
+        function showError() {
+            alert("You are doing it wrong, try again loser.");
+            location.reload();
+        }
+
+        function checkPassword() {
+            const correctPassword = "Um9ib0NyaXNpcw==";
+            if (passwordInput.value === atob(correctPassword)) {
+                location.href = "trivia.html";
+            } else {
+                showError() ;
+            }
+        }
+
+        submitButton.addEventListener("click", checkPassword);
+    </script>
+</body>
+</html>
